@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" fill="none">
+  <path d="M320 70c-72 0-120 52-120 118s52 122 120 122c38 0 70-14 92-40l-38-28c-14 16-32 24-54 24-42 0-70-34-70-78s28-76 70-76c22 0 40 8 54 24l38-28c-22-26-54-38-92-38z" fill="#FFFFFF"/>
+  <path d="M392 150h48v56h-48z" fill="#FFFFFF"/>
+  <text x="320" y="300" text-anchor="middle" fill="#FFFFFF" font-family="Georgia, serif" font-size="42" letter-spacing="10">COGNIFY</text>
+  <text x="320" y="332" text-anchor="middle" fill="#FFFFFF" font-family="Georgia, serif" font-size="14" letter-spacing="8">CLOTHING</text>
+</svg>

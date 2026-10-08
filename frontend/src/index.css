@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #080808;
+    color: #FFFFFF;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background-color: #858C72;
+    color: #FFFFFF;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #111111;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #2A2A2A;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #858C72;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-cognify-offwhite text-cognify-bg font-semibold px-6 py-3 rounded-none tracking-wider uppercase text-sm transition-all duration-300 hover:bg-white hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  .btn-secondary {
+    @apply border border-cognify-offwhite text-cognify-offwhite font-semibold px-6 py-3 rounded-none tracking-wider uppercase text-sm transition-all duration-300 hover:bg-cognify-offwhite hover:text-cognify-bg;
+  }
+
+  .btn-ghost {
+    @apply text-cognify-gray font-medium px-4 py-2 transition-all duration-300 hover:text-cognify-white;
+  }
+
+  .card {
+    @apply bg-cognify-card border border-cognify-border;
+  }
+
+  .input-field {
+    @apply bg-cognify-secondary border border-cognify-border text-cognify-white placeholder-cognify-gray px-4 py-3 w-full focus:outline-none focus:border-cognify-olive transition-colors duration-200;
+  }
+
+  .section-title {
+    @apply text-2xl md:text-3xl font-bold tracking-tight text-cognify-white;
+  }
+
+  .section-subtitle {
+    @apply text-cognify-gray text-sm tracking-widest uppercase;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .bg-cognify-gradient {
+    background: linear-gradient(180deg, #080808 0%, #111111 100%);
+  }
+}
