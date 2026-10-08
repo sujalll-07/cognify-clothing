@@ -81,8 +81,8 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Root route
-app.get('/', (req, res) => {
+// Root and API base routes
+app.get(['/', '/api'], (req, res) => {
   res.json({ 
     message: 'Welcome to Cognify Clothing API',
     docs: 'Endpoints are available at /api/*',
