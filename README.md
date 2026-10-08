@@ -2,11 +2,47 @@
 
 A modern, high-performance men's e-commerce platform featuring interactive 3D product previews, real-time garment customization, and a robust full-stack shopping architecture.
 
+[![Frontend: Vercel](https://img.shields.io/badge/Frontend-Vercel-black?style=flat&logo=vercel)](https://vercel.com/)
+[![Backend: Render](https://img.shields.io/badge/Backend-Render-46E3B7?style=flat&logo=render&logoColor=black)](https://render.com/)
+[![Database: NeonDB](https://img.shields.io/badge/Database-NeonDB-00E599?style=flat&logo=postgresql&logoColor=black)](https://neon.tech/)
+[![React 19](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react&logoColor=black)](https://react.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-Express-339933?style=flat&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Prisma](https://img.shields.io/badge/ORM-Prisma-2D3748?style=flat&logo=prisma&logoColor=white)](https://www.prisma.io/)
+
 ---
 
 ## Overview
 
 **Cognify Clothing** combines modern streetwear aesthetics with cutting-edge web technologies. Built with React 19, Three.js / React Three Fiber, Node.js, Express, Prisma ORM, and PostgreSQL, the application delivers a seamless shopping experience from interactive 3D garment exploration to order placement.
+
+---
+
+## Architecture
+
+The application is deployed across modern cloud platforms optimized for speed, reliability, and scalability:
+
+```mermaid
+flowchart LR
+    subgraph Client ["Client Layer"]
+        Browser["User Browser"]
+    end
+
+    subgraph Vercel ["Frontend (Vercel)"]
+        ReactApp["React 19 + Vite SPA<br/>(Global Edge CDN)"]
+    end
+
+    subgraph Render ["Backend API (Render)"]
+        ExpressApp["Express.js REST API<br/>(Node.js Web Service)"]
+    end
+
+    subgraph Neon ["Database (NeonDB)"]
+        PostgresDB[("Serverless PostgreSQL<br/>(Prisma Client / Pooling)")]
+    end
+
+    Browser -->|HTTPS Requests| ReactApp
+    ReactApp -->|REST API Calls / JSON| ExpressApp
+    ExpressApp -->|Prisma Connection / SSL| PostgresDB
+```
 
 ---
 
@@ -55,6 +91,11 @@ A modern, high-performance men's e-commerce platform featuring interactive 3D pr
 - **Authentication:** JSON Web Tokens (`jsonwebtoken`), `bcrypt`
 - **Security & Utilities:** Helmet, CORS, Cookie-Parser, Express-Rate-Limit, Dotenv
 
+### Cloud Infrastructure & Deployment
+- **Frontend Hosting:** [Vercel](https://vercel.com/) (Edge Network & Global CDN)
+- **Backend API Hosting:** [Render](https://render.com/) (Web Service Node.js Runtime)
+- **Database:** [Neon](https://neon.tech/) (Serverless PostgreSQL with connection pooling)
+
 ---
 
 ## Repository Structure
@@ -79,6 +120,8 @@ cognify-clothing/
 │   │   │   └── wishlist.js     # User wishlist endpoints
 │   │   └── index.js            # Express application entry point
 │   ├── .env.example            # Backend environment template
+│   ├── .gitignore              # Backend ignored files
+│   ├── products.json           # Catalog dataset
 │   ├── run_all.bat             # One-click launch script for Windows
 │   └── package.json
 │
@@ -94,10 +137,14 @@ cognify-clothing/
 │   │   │   └── ui/             # Modals, buttons, rating, empty states, product cards
 │   │   ├── context/            # AuthContext, CartContext, WishlistContext
 │   │   ├── lib/
-│   │   │   └── api.js          # API client wrapper
+│   │   │   └── api.js          # Dynamic API client (reads VITE_API_URL)
 │   │   ├── pages/              # Shop, Product, Cart, Checkout, Orders, Account, etc.
 │   │   ├── App.jsx             # Route definitions and layout providers
 │   │   └── main.jsx            # React root mount
+│   ├── .env.example            # Frontend environment template
+│   ├── .gitignore              # Frontend ignored files
+│   ├── .oxlintrc.json          # Oxlint configuration
+│   ├── vercel.json             # Vercel SPA routing configuration
 │   └── package.json
 │
 └── README.md
@@ -105,18 +152,18 @@ cognify-clothing/
 
 ---
 
-## Getting Started
+## Local Development Setup
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/) (v18 or higher recommended)
 - [npm](https://www.npmjs.com/) (v9 or higher)
-- [PostgreSQL](https://www.postgresql.org/) (v14 or higher) running locally or remotely
+- [PostgreSQL](https://www.postgresql.org/) (v14 or higher) or a free [NeonDB](https://neon.tech/) instance
 
 ---
 
 ### 1. Database Setup
 
-Create a PostgreSQL database for the project:
+Create a PostgreSQL database for the project locally, or create a project on [NeonDB](https://neon.tech/):
 
 ```sql
 CREATE DATABASE cognify_clothing;
@@ -176,7 +223,12 @@ CREATE DATABASE cognify_clothing;
    npm install
    ```
 
-3. Start the Vite development server:
+3. (Optional) Create a `.env` file if pointing to a non-default API endpoint:
+   ```bash
+   cp .env.example .env
+   ```
+
+4. Start the Vite development server:
    ```bash
    npm run dev
    ```
@@ -191,6 +243,64 @@ If you are on Windows, you can launch both backend and frontend servers simultan
 ```bat
 backend\run_all.bat
 ```
+
+---
+
+## Production Deployment Guide
+
+Deploying Cognify Clothing to production uses **NeonDB** for serverless PostgreSQL, **Render** for the Express backend, and **Vercel** for the React frontend.
+
+### Step 1: Database Setup on NeonDB
+1. Sign up for a free account at [Neon.tech](https://neon.tech/).
+2. Create a new project named `cognify_clothing`.
+3. Copy your database connection string with SSL enabled:
+   ```text
+   postgresql://<user>:<password>@<neon-host>/cognify_clothing?sslmode=require
+   ```
+4. Push your schema and seed catalog data from your local terminal to NeonDB:
+   ```bash
+   cd backend
+   npx prisma db push
+   npm run db:seed
+   ```
+
+---
+
+### Step 2: Deploy Backend API on Render
+1. Sign in to [Render.com](https://render.com/) and click **New +** &rarr; **Web Service**.
+2. Connect your GitHub repository.
+3. Configure the service:
+   - **Name:** `cognify-clothing-api`
+   - **Root Directory:** `backend`
+   - **Environment:** `Node`
+   - **Build Command:** `npm install && npx prisma generate`
+   - **Start Command:** `npm start`
+4. Under **Environment Variables**, add:
+   | Variable | Value |
+   |---|---|
+   | `DATABASE_URL` | Your NeonDB connection string from Step 1 |
+   | `JWT_SECRET` | Strong random 256-bit secret string |
+   | `JWT_EXPIRES_IN` | `7d` |
+   | `NODE_ENV` | `production` |
+   | `CLIENT_URL` | Your Vercel frontend URL (e.g. `https://cognify-clothing.vercel.app`) |
+5. Click **Create Web Service**. Once deployed, copy your Render URL:
+   `https://cognify-clothing-api.onrender.com`
+
+---
+
+### Step 3: Deploy Frontend on Vercel
+1. Sign in to [Vercel.com](https://vercel.com/) and click **Add New...** &rarr; **Project**.
+2. Select your GitHub repository.
+3. Configure the build settings:
+   - **Root Directory:** Click **Edit** and choose `frontend`.
+   - **Framework Preset:** `Vite` (automatically detected).
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `dist`
+4. Under **Environment Variables**, add:
+   | Variable | Value |
+   |---|---|
+   | `VITE_API_URL` | `https://cognify-clothing-api.onrender.com/api` (your Render URL from Step 2) |
+5. Click **Deploy**. Vercel will build and serve your frontend globally. Client-side routing is handled seamlessly via `frontend/vercel.json`.
 
 ---
 
