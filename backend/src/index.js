@@ -56,9 +56,46 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
 }));
 
-// CORS Configuration
+// Dynamic CORS Configuration (supports http/https, Vercel domains, and localhost)
+const rawClientUrl = process.env.CLIENT_URL ? process.env.CLIENT_URL.trim().replace(/\/+$/, '') : '';
+const allowedOrigins = new Set([
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://cognifyclothing.vercel.app',
+  'http://cognifyclothing.vercel.app',
+]);
+
+if (rawClientUrl) {
+  allowedOrigins.add(rawClientUrl);
+  if (rawClientUrl.startsWith('http://')) {
+    allowedOrigins.add(rawClientUrl.replace('http://', 'https://'));
+  } else if (rawClientUrl.startsWith('https://')) {
+    allowedOrigins.add(rawClientUrl.replace('https://', 'http://'));
+  }
+}
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    // Allow non-browser requests (Postman, server-to-server, curl)
+    if (!origin) return callback(null, true);
+
+    try {
+      const url = new URL(origin);
+      const cleanOrigin = `${url.protocol}//${url.host}`;
+      if (
+        allowedOrigins.has(cleanOrigin) ||
+        url.hostname === 'localhost' ||
+        url.hostname.endsWith('.vercel.app')
+      ) {
+        return callback(null, true);
+      }
+    } catch {
+      // Fallback string matching
+      if (allowedOrigins.has(origin)) return callback(null, true);
+    }
+
+    callback(null, false);
+  },
   credentials: true,
 }));
 
