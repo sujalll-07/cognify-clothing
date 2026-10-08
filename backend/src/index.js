@@ -10,6 +10,7 @@ import categoryRoutes from './routes/categories.js';
 import cartRoutes from './routes/cart.js';
 import wishlistRoutes from './routes/wishlist.js';
 import orderRoutes from './routes/orders.js';
+import prisma from './lib/prisma.js';
 
 // Production Startup Security Check: Enforce strong, non-default JWT secret
 const KNOWN_INSECURE_SECRETS = [
@@ -117,9 +118,21 @@ const globalLimiter = rateLimit({
 });
 app.use('/api', globalLimiter);
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+// Health check with database connectivity probe
+app.get('/api/health', async (req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ status: 'ok', database: 'connected', timestamp: new Date().toISOString() });
+  } catch (err) {
+    res.status(500).json({
+      status: 'error',
+      database: 'disconnected',
+      error: err.message,
+      code: err.code || null,
+      name: err.name || null,
+      timestamp: new Date().toISOString(),
+    });
+  }
 });
 
 // Root and API base routes
@@ -157,21 +170,27 @@ app.use((err, req, res, next) => {
     stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
   });
 
-  // Handle known Prisma errors
-  if (err.code === 'P2002') {
-    return res.status(409).json({ error: 'A record with this identifier already exists.' });
-  }
-  if (err.code === 'P2025') {
-    return res.status(404).json({ error: 'Requested record was not found.' });
-  }
-  if (err.code === 'P2003') {
-    return res.status(400).json({ error: 'Referenced related item does not exist.' });
-  }
-  if (err.code === 'P2021') {
-    return res.status(500).json({ error: 'Database tables do not exist yet. Please run npx prisma db push on your cloud database.' });
-  }
-  if (err.code === 'P1001') {
-    return res.status(500).json({ error: 'Cannot connect to database. Please check your DATABASE_URL and ensure sslmode=require is set.' });
+  // Handle known Prisma & database errors
+  if (err.name?.startsWith('Prisma') || (err.code && String(err.code).startsWith('P'))) {
+    if (err.code === 'P2002') {
+      return res.status(409).json({ error: 'A record with this identifier already exists.' });
+    }
+    if (err.code === 'P2025') {
+      return res.status(404).json({ error: 'Requested record was not found.' });
+    }
+    if (err.code === 'P2003') {
+      return res.status(400).json({ error: 'Referenced related item does not exist.' });
+    }
+    if (err.code === 'P2021') {
+      return res.status(500).json({ error: 'Database tables do not exist yet. Please run npx prisma db push on your cloud database.' });
+    }
+    if (err.code === 'P1001') {
+      return res.status(500).json({ error: 'Cannot connect to database. Please check your DATABASE_URL and ensure sslmode=require is set.' });
+    }
+    return res.status(500).json({
+      error: `Database error [${err.code || err.name}]: ${err.message}`,
+      code: err.code || null,
+    });
   }
 
   // Handle explicit status errors (e.g. from route validation)

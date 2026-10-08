@@ -57,8 +57,8 @@ export default function RegisterPage() {
             <input required name="email" type="email" placeholder="john@example.com" value={formData.email} onChange={handleChange} className="input-field" />
           </div>
           <div>
-            <label className="block text-xs uppercase tracking-widest text-cognify-gray mb-2">Password</label>
-            <input required name="password" type="password" placeholder="••••••••" value={formData.password} onChange={handleChange} className="input-field" />
+            <label className="block text-xs uppercase tracking-widest text-cognify-gray mb-2">Password (min. 8 characters)</label>
+            <input required minLength={8} name="password" type="password" placeholder="••••••••" value={formData.password} onChange={handleChange} className="input-field" />
           </div>
           <div>
             <label className="block text-xs uppercase tracking-widest text-cognify-gray mb-2">Address (Optional)</label>
