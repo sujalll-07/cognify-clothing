@@ -1,4 +1,5 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const rawBase = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').trim().replace(/\/+$/, '');
+const API_BASE = rawBase.endsWith('/api') ? rawBase : `${rawBase}/api`;
 
 class ApiClient {
   constructor() {
@@ -10,7 +11,8 @@ class ApiClient {
   }
 
   async request(endpoint, options = {}) {
-    const url = `${this.baseUrl}${endpoint}`;
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const url = `${this.baseUrl}${cleanEndpoint}`;
     const headers = {
       'Content-Type': 'application/json',
       ...options.headers,
