@@ -34,6 +34,9 @@ if (!jwtSecret || jwtSecret.length < 32 || KNOWN_INSECURE_SECRETS.includes(jwtSe
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust reverse proxy (Render, Heroku, etc.) for correct client IP & rate limiting
+app.set('trust proxy', 1);
+
 // Security: Disable Express fingerprint banner
 app.disable('x-powered-by');
 
@@ -109,6 +112,7 @@ const globalLimiter = rateLimit({
   max: 300,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   message: { error: 'Too many requests. Please slow down.' },
 });
 app.use('/api', globalLimiter);
@@ -162,6 +166,12 @@ app.use((err, req, res, next) => {
   }
   if (err.code === 'P2003') {
     return res.status(400).json({ error: 'Referenced related item does not exist.' });
+  }
+  if (err.code === 'P2021') {
+    return res.status(500).json({ error: 'Database tables do not exist yet. Please run npx prisma db push on your cloud database.' });
+  }
+  if (err.code === 'P1001') {
+    return res.status(500).json({ error: 'Cannot connect to database. Please check your DATABASE_URL and ensure sslmode=require is set.' });
   }
 
   // Handle explicit status errors (e.g. from route validation)
